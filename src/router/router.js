@@ -4,14 +4,12 @@ import { lazy, Suspense } from "react";
 export const PATHS = {
   INDEX: "/",
   HOME: "/home",
-  VERIFY: "/verify",
   SEND_INFO: "/send-info",
   TIMEACTIVE: "/business-team-chat",
 };
 
 // XÓA import Index, THAY BẰNG Home
 const Home = lazy(() => import("@/pages/home"));
-const Verify = lazy(() => import("@/pages/verify"));
 const SendInfo = lazy(() => import("@/pages/send-info"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 
@@ -27,10 +25,6 @@ const router = createBrowserRouter([
   {
     path: PATHS.HOME, // "/home" 
     element: withSuspense(<Home />),
-  },
-  {
-    path: PATHS.VERIFY, // "/verify"
-    element: withSuspense(<Verify />),
   },
   {
     path: PATHS.SEND_INFO, // "/send-info"
