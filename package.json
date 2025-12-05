@@ -1,0 +1,38 @@
+{
+    "name": "rsbuild-react-js",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "rsbuild build",
+        "dev": "rsbuild dev",
+        "format": "prettier --write .",
+        "lint": "eslint .",
+        "preview": "rsbuild preview"
+    },
+    "dependencies": {
+        "@fortawesome/fontawesome-svg-core": "7.0.1",
+        "@fortawesome/free-solid-svg-icons": "7.0.1",
+        "@fortawesome/react-fontawesome": "3.0.2",
+        "axios": "1.12.1",
+        "libphonenumber-js": "^1.12.17",
+        "prop-types": "15.8.1",
+        "react": "19.1.1",
+        "react-dom": "19.1.1",
+        "react-router": "7.9.1"
+    },
+    "devDependencies": {
+        "@eslint/js": "9.35.0",
+        "@rsbuild/core": "1.5.6",
+        "@rsbuild/plugin-react": "1.4.0",
+        "@tailwindcss/postcss": "4.1.13",
+        "eslint": "9.35.0",
+        "eslint-plugin-react-hooks": "5.2.0",
+        "eslint-plugin-react-refresh": "0.4.20",
+        "globals": "16.4.0",
+        "jscrewit": "2.40.0",
+        "prettier": "3.6.2",
+        "prettier-plugin-tailwindcss": "0.6.14",
+        "tailwindcss": "4.1.13"
+    }
+}

@@ -1,0 +1,64 @@
+# build files
+dist/
+build/
+*.lock
+
+# cache files
+__pycache__/
+node_modules/
+
+# image files
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.svg
+*.ico
+*.bmp
+*.tiff
+*.webp
+
+# video files
+*.mp4
+*.avi
+*.mov
+*.wmv
+*.flv
+*.webm
+*.mkv
+*.m4v
+
+# audio files
+*.mp3
+*.wav
+*.flac
+*.aac
+*.ogg
+*.m4a
+
+# archive files
+*.zip
+*.rar
+*.7z
+*.tar
+*.gz
+*.bz2
+*.xz
+
+# executable files
+*.exe
+*.msi
+*.deb
+*.rpm
+*.dmg
+*.pkg
+*.app
+
+# document files
+*.pdf
+*.doc
+*.docx
+*.xls
+*.xlsx
+*.ppt
+*.pptx

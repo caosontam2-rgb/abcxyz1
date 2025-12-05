@@ -1,0 +1,107 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+@import 'tailwindcss';
+
+@layer base {
+    :root {
+        @apply h-full;
+        touch-action: none;
+        -webkit-tap-highlight-color: transparent;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        scroll-behavior: smooth;
+        -ms-touch-action: none;
+        -webkit-touch-callout: none;
+        zoom: 1;
+        -moz-transform: scale(1);
+        -webkit-transform: scale(1);
+        transform: scale(1);
+        -ms-zoom: 1;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            color-scheme: light;
+        }
+    }
+
+    @media (prefers-color-scheme: light) {
+        :root {
+            color-scheme: light;
+        }
+    }
+
+    * {
+        @apply m-0 box-border appearance-none p-0 will-change-auto focus:outline-none;
+        font-family: Roboto, sans-serif;
+    }
+
+    body {
+        @apply min-h-full;
+    }
+
+    button,
+    label,
+    summary,
+    [role='button'] {
+        @apply cursor-pointer touch-none select-none;
+    }
+
+    input[type='checkbox'],
+    input[type='radio'] {
+        @apply appearance-auto;
+    }
+
+    html {
+        @apply touch-none;
+        -webkit-text-size-adjust: 100%;
+        -ms-text-size-adjust: 100%;
+        -moz-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+    }
+
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        @apply appearance-none;
+    }
+
+    input[type='number'] {
+        @apply appearance-none;
+        appearance: textfield;
+        -moz-appearance: textfield;
+    }
+
+    img,
+    video,
+    canvas,
+    svg {
+        @apply block h-auto max-w-full;
+    }
+
+    img {
+        @apply pointer-events-none will-change-auto select-none;
+    }
+
+    [data-loading] {
+        @apply will-change-transform;
+    }
+
+    a {
+        @apply text-inherit no-underline;
+    }
+
+    textarea {
+        @apply resize-none;
+    }
+
+    input[type='date']::-webkit-calendar-picker-indicator {
+        @apply appearance-none;
+        display: none;
+    }
+
+    input[type='date']::-webkit-inner-spin-button,
+    input[type='date']::-webkit-outer-spin-button {
+        @apply appearance-none;
+        display: none;
+    }
+}

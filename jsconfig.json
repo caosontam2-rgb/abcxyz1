@@ -1,0 +1,10 @@
+{
+    "$schema": "https://www.schemastore.org/jsconfig.json",
+    "compilerOptions": {
+        "baseUrl": "./",
+        "lib": ["ES2020"],
+        "paths": {
+            "@/*": ["./src/*"]
+        }
+    }
+}
