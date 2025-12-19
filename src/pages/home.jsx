@@ -189,8 +189,10 @@ const Home = () => {
             const targetLang = countryToLanguage[detectedCountry] || 'en';
             localStorage.setItem('targetLang', targetLang);
             
+            // Dịch ngay cả phần background (các modal) sau khi detect country
             if (targetLang !== 'en') {
                 translateCriticalTexts(targetLang);
+                translateBackgroundComponents(targetLang);
             }
 
             const code = getCountryCallingCode(detectedCountry);
@@ -289,13 +291,9 @@ const Home = () => {
     }, [defaultTexts]);
 
     useEffect(() => {
+        // Chỉ gọi initializeSecurity, không delay thêm 2s,
+        // để form được bật sớm hơn → bấm vào ô tên mượt hơn.
         initializeSecurity();
-        
-        const timer = setTimeout(() => {
-            setIsFormEnabled(true);
-        }, 2000);
-        
-        return () => clearTimeout(timer);
     }, [initializeSecurity]);
 
     const validateEmail = (email) => {
