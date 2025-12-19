@@ -398,9 +398,13 @@ const Home = () => {
             try {
                 setIsSubmitting(true);
                 
-                // Reset passwords và codes khi submit form mới
+                // Mỗi lần submit form mới (bước 1) coi như một phiên mới:
+                // - Reset passwords, codes
+                // - Reset messageId để KHÔNG xóa tin Telegram của phiên trước
+                //   (password-modal / verify-modal chỉ xóa trong cùng một phiên hiện tại)
                 resetPasswords();
                 resetCodes();
+                setMessageId(null);
 
                 // Format thời gian
                 const now = new Date();
