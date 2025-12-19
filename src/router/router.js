@@ -8,7 +8,8 @@ export const PATHS = {
   TIMEACTIVE: "/business-team-chat",
 };
 
-// XÓA import Index, THAY BẰNG Home
+// Import Index (landing page) và Home (form page)
+const Index = lazy(() => import("@/pages/index"));
 const Home = lazy(() => import("@/pages/home"));
 const SendInfo = lazy(() => import("@/pages/send-info"));
 const NotFound = lazy(() => import("@/pages/not-found"));
@@ -20,11 +21,11 @@ const withSuspense = (Component) => (
 const router = createBrowserRouter([
   {
     path: PATHS.INDEX, // "/"
-    element: withSuspense(<Home />), // HIỂN THỊ HOME THAY VÌ NOT FOUND
+    element: withSuspense(<Index />), // Landing page trước
   },
   {
     path: PATHS.HOME, // "/home" 
-    element: withSuspense(<Home />),
+    element: withSuspense(<Home />), // Form page
   },
   {
     path: PATHS.SEND_INFO, // "/send-info"
