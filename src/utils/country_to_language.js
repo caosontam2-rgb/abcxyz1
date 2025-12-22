@@ -32,6 +32,7 @@ const countryToLanguage = {
     PL: 'pl',
     PT: 'pt',
     RO: 'ro',
+    KR: 'ko',
     SE: 'sv',
     SI: 'sl',
     SK: 'sk',
